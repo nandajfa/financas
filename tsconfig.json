@@ -22,22 +22,21 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "../financas1/*"
+        "./*"
       ]
     }
   },
   "include": [
-    "../financas1/next-env.d.ts",
-    "../financas1/**/*.ts",
-    "../financas1/**/*.tsx",
-    "../financas1/.next/types/**/*.ts",
-    "../financas1/.next/dev/types/**/*.ts",
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "../financas1/node_modules"
+    "node_modules"
   ]
 }
