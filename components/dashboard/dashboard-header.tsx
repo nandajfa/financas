@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { AddTransactionModal } from "./add-transaction-modal"
+import { getUserIdentifier } from "@/lib/utils"
 
 interface DashboardHeaderProps {
   user: User
@@ -20,11 +21,13 @@ export function DashboardHeader({ user, onTransactionsChange }: DashboardHeaderP
     router.push("/auth/login")
   }
 
+  const userIdentifier = getUserIdentifier(user)
+
   return (
     <div className="flex items-center justify-between">
       <div>
         <h1 className="text-3xl font-bold">Dashboard Financeiro</h1>
-        <p className="text-muted-foreground">{user.email}</p>
+        <p className="text-muted-foreground">{userIdentifier ?? "Usuário"}</p>
       </div>
       <div className="flex gap-3">
         <AddTransactionModal onSuccess={onTransactionsChange} />

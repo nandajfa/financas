@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import type { Transaction } from '@/types/transaction'
 import { DashboardHeader } from './dashboard-header'
 import { SummaryCards } from './summary-cards'
 import { ChartsSection } from './charts-section'
 import { TransactionsTable } from './transactions-table'
-import type { Transaction } from '@/types/transaction'
+import { getUserIdentifier } from '@/lib/utils'
 
 export function DashboardContent({ user }: { user: User }) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -31,7 +32,15 @@ export function DashboardContent({ user }: { user: User }) {
       setLoading(true)
       const supabase = createClient()
 
-      let query = supabase.from('transacoes').select('*').eq('user', user.email)
+      const userIdentifier = getUserIdentifier(user)
+
+      if (!userIdentifier) {
+        console.error('Nenhum identificador de usuário disponível para buscar transações')
+        setTransactions([])
+        return
+      }
+
+      let query = supabase.from('transacoes').select('*').eq('user', userIdentifier)
 
       // Apply filters
       if (filter.type !== 'all') {

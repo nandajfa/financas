@@ -4,6 +4,7 @@ import type React from 'react'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getUserIdentifier } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -70,6 +71,13 @@ export function AddTransactionModal({ onSuccess }: AddTransactionModalProps) {
 
     if (!user) return
 
+    const userIdentifier = getUserIdentifier(user)
+
+    if (!userIdentifier) {
+      alert('Não foi possível identificar o usuário autenticado.')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -77,7 +85,7 @@ export function AddTransactionModal({ onSuccess }: AddTransactionModalProps) {
         .from<TransacaoInsert>('transacoes')
         .insert({
           quando: form.data,
-          user: user,
+          user: userIdentifier,
           estabelecimento: form.estabelecimento,
           valor: Number.parseFloat(form.valor),
           detalhes: form.detalhes,
