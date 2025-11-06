@@ -33,7 +33,9 @@
     "../financas1/**/*.ts",
     "../financas1/**/*.tsx",
     "../financas1/.next/types/**/*.ts",
-    "../financas1/.next/dev/types/**/*.ts"
+    "../financas1/.next/dev/types/**/*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "../financas1/node_modules"
