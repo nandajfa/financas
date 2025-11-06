@@ -1,0 +1,1 @@
+{"version":3,"sources":["turbopack:///[project]/app/page.tsx"],"sourcesContent":["\"use client\"\n\nimport { redirect } from \"next/navigation\"\n\nexport default function HomePage() {\n  redirect(\"/dashboard\")\n}\n"],"names":[],"mappings":"uCAEA,IAAA,EAAA,EAAA,CAAA,CAAA,OAEe,SAAS,IACtB,CAAA,EAAA,EAAA,QAAA,AAAQ,EAAC,aACX"}

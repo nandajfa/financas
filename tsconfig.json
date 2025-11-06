@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "target": "ES6",
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "../financas1/*"
+      ]
+    }
+  },
+  "include": [
+    "../financas1/next-env.d.ts",
+    "../financas1/**/*.ts",
+    "../financas1/**/*.tsx",
+    "../financas1/.next/types/**/*.ts",
+    "../financas1/.next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "../financas1/node_modules"
+  ]
+}
