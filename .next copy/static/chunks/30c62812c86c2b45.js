@@ -1,1 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,31713,t=>{"use strict";var e=t.i(18566);function o(){(0,e.redirect)("/dashboard")}t.s(["default",()=>o])}]);
