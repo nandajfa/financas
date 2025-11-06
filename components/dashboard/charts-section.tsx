@@ -1,119 +1,118 @@
-"use client"
+'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Skeleton } from '../ui/skeleton'
 import {
+  ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
+  Tooltip,
   BarChart,
-  Bar,
+  CartesianGrid,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts"
-import type { Transaction } from "../../types/transaction"
+  Bar,
+  Legend
+} from 'recharts'
+
+import type { Transaction } from '../../types/transaction'
 
 interface ChartsSectionProps {
   transactions: Transaction[]
+  isLoading?: boolean
 }
 
-export function ChartsSection({ transactions }: ChartsSectionProps) {
-  // Dados por categoria
-  const categoriaData = transactions
-    .filter((t) => t.tipo === "despesa")
-    .reduce(
-      (acc, t) => {
-        const existing = acc.find((item) => item.name === t.categoria)
-        if (existing) {
-          existing.value += t.valor || 0
-        } else {
-          acc.push({ name: t.categoria, value: t.valor || 0 })
-        }
-        return acc
-      },
-      [] as Array<{ name: string; value: number }>,
-    )
+const COLORS = ['#0ea5e9', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6']
 
-  // Dados por mês
-  const mesData = transactions.reduce(
-    (acc, t) => {
-      const date = new Date(t.quando)
-      const mes = date.toLocaleString("pt-BR", { month: "short" })
-      const existing = acc.find((item) => item.name === mes)
+export function ChartsSection({ transactions, isLoading }: ChartsSectionProps) {
+  const categoriaData = transactions
+    .filter(transaction => transaction.tipo === 'despesa')
+    .reduce((acc, transaction) => {
+      const categoryName = transaction.categoria ?? 'Sem categoria'
+      const existing = acc.find(item => item.name === categoryName)
       if (existing) {
-        if (t.tipo === "despesa") existing.despesas += t.valor || 0
-        else existing.receitas += t.valor || 0
+        existing.value += transaction.valor || 0
       } else {
-        acc.push({
-          name: mes,
-          despesas: t.tipo === "despesa" ? t.valor || 0 : 0,
-          receitas: t.tipo === "receita" ? t.valor || 0 : 0,
-        })
+        acc.push({ name: categoryName, value: transaction.valor || 0 })
       }
       return acc
-    },
-    [] as Array<{ name: string; despesas: number; receitas: number }>,
-  )
+    }, [] as Array<{ name: string; value: number }>)
 
-  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"]
+  const mesData = transactions.reduce((acc, transaction) => {
+    const date = new Date(transaction.quando ?? transaction.created_at)
+    if (Number.isNaN(date.getTime())) {
+      return acc
+    }
+
+    const mes = date.toLocaleString('pt-BR', { month: 'short' })
+    const existing = acc.find(item => item.name === mes)
+
+    if (existing) {
+      if (transaction.tipo === 'despesa') {
+        existing.despesas += transaction.valor || 0
+      } else {
+        existing.receitas += transaction.valor || 0
+      }
+    } else {
+      acc.push({
+        name: mes,
+        despesas: transaction.tipo === 'despesa' ? transaction.valor || 0 : 0,
+        receitas: transaction.tipo === 'receita' ? transaction.valor || 0 : 0
+      })
+    }
+
+    return acc
+  }, [] as Array<{ name: string; despesas: number; receitas: number }>)
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Gráfico de Pizza - Despesas por Categoria */}
-      <Card>
+    <div className="grid gap-6 lg:grid-cols-2">
+      <Card className="border border-border/50 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg">Despesas por Categoria</CardTitle>
+          <CardTitle className="text-lg font-semibold">Distribuição de despesas</CardTitle>
         </CardHeader>
-        <CardContent>
-          {categoriaData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+        <CardContent className="flex min-h-[320px] items-center justify-center">
+          {isLoading ? (
+            <Skeleton className="h-56 w-full" />
+          ) : categoriaData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
-                <Pie
-                  data={categoriaData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
+                <Pie data={categoriaData} cx="50%" cy="50%" dataKey="value" innerRadius={60} outerRadius={100} paddingAngle={4}>
                   {categoriaData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
+                <Tooltip formatter={value => `R$ ${Number(value).toFixed(2)}`} />
+                <Legend />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-center text-muted-foreground py-8">Sem dados de despesas</p>
+            <p className="text-center text-sm text-muted-foreground">Nenhuma despesa registrada no período selecionado.</p>
           )}
         </CardContent>
       </Card>
 
-      {/* Gráfico de Barras - Receitas vs Despesas por Mês */}
-      <Card>
+      <Card className="border border-border/50 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg">Receitas vs Despesas</CardTitle>
+          <CardTitle className="text-lg font-semibold">Receitas x Despesas</CardTitle>
         </CardHeader>
-        <CardContent>
-          {mesData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+        <CardContent className="flex min-h-[320px] items-center justify-center">
+          {isLoading ? (
+            <Skeleton className="h-56 w-full" />
+          ) : mesData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={mesData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
+                <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
+                <XAxis dataKey="name" stroke="currentColor" />
+                <YAxis stroke="currentColor" tickFormatter={value => `R$ ${Number(value).toFixed(0)}`} />
+                <Tooltip formatter={value => `R$ ${Number(value).toFixed(2)}`} />
                 <Legend />
-                <Bar dataKey="receitas" fill="#10b981" />
-                <Bar dataKey="despesas" fill="#ef4444" />
+                <Bar dataKey="receitas" fill="#22c55e" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="despesas" fill="#ef4444" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-center text-muted-foreground py-8">Sem dados</p>
+            <p className="text-center text-sm text-muted-foreground">Sem movimentações para exibir.</p>
           )}
         </CardContent>
       </Card>

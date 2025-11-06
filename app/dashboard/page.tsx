@@ -1,114 +1,78 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '../../lib/supabase/client'
+import type { User } from '@supabase/supabase-js'
+import { Loader2 } from 'lucide-react'
 
-interface Transaction {
-  id: string
-  descricao: string
-  categoria: string
-  tipo: string
-  valor: number
-  data: string
-  created_at: string
-}
-interface Transaction {
-  id: string
-  descricao: string
-  categoria: string
-  tipo: string
-  valor: number
-  created_at: string
-}
+import { DashboardContent } from '@/components/dashboard/dashboard-content'
+import { Card, CardContent } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/client'
+
 export default function DashboardPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const supabase = createClient()
-        const { data, error: supabaseError } = await supabase
-          .from('transacoes')
-          .select('*')
-          .order('created_at', { ascending: false })
+    const supabase = createClient()
 
-        if (supabaseError) throw supabaseError
-        setTransactions(data || [])
-      } catch (err) {
-        console.error('[v0] Error fetching transactions:', err)
-        setError(
-          err instanceof Error ? err.message : 'Erro ao carregar transações'
-        )
+    const loadUser = async () => {
+      setLoading(true)
+
+      try {
+        const {
+          data: { user },
+          error
+        } = await supabase.auth.getUser()
+
+        if (error) {
+          console.error('Erro ao recuperar usuário autenticado:', error.message)
+        }
+
+        setUser(user ?? null)
+      } catch (error) {
+        console.error('Erro inesperado ao buscar usuário:', error)
+        setUser(null)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchTransactions()
+    void loadUser()
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>Carregando transações...</p>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" aria-label="Carregando" />
       </div>
     )
   }
 
-  if (error) {
+  if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-500 font-semibold">Erro ao carregar dados</p>
-          <p className="text-gray-600 text-sm mt-2">{error}</p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <Card className="w-full max-w-md border-dashed">
+          <CardContent className="space-y-4 py-10 text-center">
+            <h1 className="text-2xl font-semibold">Acesso restrito</h1>
+            <p className="text-muted-foreground">
+              É necessário autenticar-se para visualizar o seu painel financeiro e gerenciar suas
+              transações.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-6 px-4">
-        <h1 className="text-3xl font-bold mb-2">Dashboard Financeiro</h1>
-        <p className="text-gray-600 mb-6">
-          Suas transações totais: {transactions.length}
-        </p>
-
-        <div className="space-y-4">
-          {transactions.map(transaction => (
-            <div
-              key={transaction.id}
-              className="p-4 border rounded-lg bg-white shadow-sm"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-semibold">{transaction.descricao}</p>
-                  <p className="text-sm text-gray-600">
-                    {transaction.categoria}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(transaction.created_at).toLocaleDateString(
-                      'pt-BR'
-                    )}
-                  </p>
-                </div>
-                <p
-                  className={`font-bold text-lg ${
-                    transaction.tipo === 'receita'
-                      ? 'text-green-600'
-                      : 'text-red-600'
-                  }`}
-                >
-                  {transaction.tipo === 'receita' ? '+' : '-'} R${' '}
-                  {transaction.valor.toFixed(2)}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
+  return <DashboardContent user={user} />
 }
