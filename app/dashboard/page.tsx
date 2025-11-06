@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import type { User } from '@supabase/supabase-js'
 import { Loader2 } from 'lucide-react'
 
 import { DashboardContent } from '@/components/dashboard/dashboard-content'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 
 export default function DashboardPage() {
@@ -62,12 +64,17 @@ export default function DashboardPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <Card className="w-full max-w-md border-dashed">
-          <CardContent className="space-y-4 py-10 text-center">
+          <CardContent className="space-y-6 py-10 text-center">
             <h1 className="text-2xl font-semibold">Acesso restrito</h1>
             <p className="text-muted-foreground">
               É necessário autenticar-se para visualizar o seu painel financeiro e gerenciar suas
               transações.
             </p>
+            <div className="flex justify-center">
+              <Button asChild>
+                <Link href="/auth/login">Ir para a página de login</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
