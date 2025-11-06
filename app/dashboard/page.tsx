@@ -22,15 +22,15 @@ export default function DashboardPage() {
 
       try {
         const {
-          data: { user },
+          data: { session },
           error
-        } = await supabase.auth.getUser()
+        } = await supabase.auth.getSession()
 
         if (error) {
           console.error('Erro ao recuperar usuário autenticado:', error.message)
         }
 
-        setUser(user ?? null)
+        setUser(session?.user ?? null)
       } catch (error) {
         console.error('Erro inesperado ao buscar usuário:', error)
         setUser(null)

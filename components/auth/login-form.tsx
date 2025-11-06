@@ -27,9 +27,9 @@ export function LoginForm() {
     const ensureNoActiveSession = async () => {
       try {
         const {
-          data: { user },
+          data: { session },
           error
-        } = await supabase.auth.getUser()
+        } = await supabase.auth.getSession()
 
         if (!isMounted) {
           return
@@ -39,7 +39,7 @@ export function LoginForm() {
           console.error("Erro ao recuperar sessão ativa:", error.message)
         }
 
-        if (user) {
+        if (session?.user) {
           router.replace("/dashboard")
           router.refresh()
         } else {

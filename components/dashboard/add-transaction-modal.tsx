@@ -66,8 +66,17 @@ export function AddTransactionModal({ onSuccess }: AddTransactionModalProps) {
     e.preventDefault()
     const supabase = createClient()
     const {
-      data: { user }
-    } = await supabase.auth.getUser()
+      data: { session },
+      error: sessionError
+    } = await supabase.auth.getSession()
+
+    if (sessionError) {
+      alert('Não foi possível validar a sessão do usuário autenticado.')
+      console.error(sessionError)
+      return
+    }
+
+    const user = session?.user
 
     if (!user) return
 
