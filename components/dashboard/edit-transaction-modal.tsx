@@ -81,14 +81,24 @@ export function EditTransactionModal({
         detalhes: form.detalhes
       }
 
-      const { error } = await (supabase as any)
+      const { data: updatedData, error } = await (supabase as any)
         .from('transacoes')
         .update(payload)
         .eq('id', transaction.id)
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao atualizar transação:', error)
+        throw error
+      }
+
+      console.log('Transação atualizada com sucesso:', updatedData)
 
       setOpen(false)
+
+      // Aguardar um pouco para garantir que o banco processou
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       onSuccess()
     } catch (error) {
       alert('Erro ao atualizar transação')

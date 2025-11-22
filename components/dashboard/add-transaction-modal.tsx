@@ -4,7 +4,6 @@ import type React from 'react'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { getUserIdentifier } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -26,7 +25,7 @@ import { Plus } from 'lucide-react'
 
 type TransacaoInsert = {
   quando: string
-  user: string
+  user_id: string
   estabelecimento: string
   valor: number
   detalhes?: string
@@ -78,11 +77,7 @@ export function AddTransactionModal({ onSuccess }: AddTransactionModalProps) {
 
     const user = session?.user
 
-    if (!user) return
-
-    const userIdentifier = getUserIdentifier(user)
-
-    if (!userIdentifier) {
+    if (!user || !user.id) {
       alert('Não foi possível identificar o usuário autenticado.')
       return
     }
@@ -90,11 +85,11 @@ export function AddTransactionModal({ onSuccess }: AddTransactionModalProps) {
     setLoading(true)
 
     try {
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from<TransacaoInsert>('transacoes')
         .insert({
           quando: form.data,
-          user: userIdentifier,
+          user_id: user.id,
           estabelecimento: form.estabelecimento,
           valor: Number.parseFloat(form.valor),
           detalhes: form.detalhes,
@@ -102,9 +97,16 @@ export function AddTransactionModal({ onSuccess }: AddTransactionModalProps) {
           categoria: form.categoria
           // cartao_credito: opcional
         })
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao inserir transação:', error)
+        throw error
+      }
 
+      console.log('Transação inserida com sucesso:', insertedData)
+
+      // Fechar o modal e limpar o formulário
       setOpen(false)
       setForm({
         data: new Date().toISOString().split('T')[0],
@@ -114,10 +116,15 @@ export function AddTransactionModal({ onSuccess }: AddTransactionModalProps) {
         valor: '',
         detalhes: ''
       })
+
+      // Aguardar um pouco para garantir que o banco processou
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Chamar o callback para atualizar a lista
       onSuccess()
     } catch (error) {
-      alert('Erro ao adicionar transação')
-      console.error(error)
+      console.error('Erro ao adicionar transação:', error)
+      alert('Erro ao adicionar transação. Verifique o console para mais detalhes.')
     } finally {
       setLoading(false)
     }
