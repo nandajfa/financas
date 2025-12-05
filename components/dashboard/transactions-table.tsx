@@ -24,6 +24,7 @@ import {
 } from '../ui/pagination'
 import { Skeleton } from '../ui/skeleton'
 import type { Transaction } from '../../types/transaction'
+import { parseTransactionDate } from '@/lib/utils'
 import { EditTransactionModal } from './edit-transaction-modal'
 import type { DashboardFilters } from './dashboard-content'
 
@@ -204,53 +205,57 @@ export function TransactionsTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedTransactions.map(transaction => (
-                  <TableRow key={transaction.id} className="transition-colors hover:bg-muted/40">
-                    <TableCell>{new Date(transaction.quando ?? transaction.created_at).toLocaleDateString('pt-BR')}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-foreground">{transaction.estabelecimento}</span>
-                        {transaction.detalhes ? (
-                          <span className="text-xs text-muted-foreground">{transaction.detalhes}</span>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>{transaction.categoria}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold uppercase tracking-wide ${
-                          transaction.tipo === 'receita'
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200'
-                            : 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-200'
-                        }`}
-                      >
-                        {transaction.tipo === 'receita' ? 'Receita' : 'Despesa'}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {transaction.tipo === 'receita' ? '+' : '-'} R$ {transaction.valor?.toFixed(2)}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
-                          <EditTransactionModal transaction={transaction} onSuccess={onTransactionsChange} />
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => handleDelete(transaction.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {paginatedTransactions.map(transaction => {
+                  const transactionDate = parseTransactionDate(transaction.quando ?? transaction.created_at)
+
+                  return (
+                    <TableRow key={transaction.id} className="transition-colors hover:bg-muted/40">
+                      <TableCell>{transactionDate ? transactionDate.toLocaleDateString('pt-BR') : '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-foreground">{transaction.estabelecimento}</span>
+                          {transaction.detalhes ? (
+                            <span className="text-xs text-muted-foreground">{transaction.detalhes}</span>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell>{transaction.categoria}</TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold uppercase tracking-wide ${
+                            transaction.tipo === 'receita'
+                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200'
+                              : 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-200'
+                          }`}
+                        >
+                          {transaction.tipo === 'receita' ? 'Receita' : 'Despesa'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {transaction.tipo === 'receita' ? '+' : '-'} R$ {transaction.valor?.toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40">
+                            <EditTransactionModal transaction={transaction} onSuccess={onTransactionsChange} />
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => handleDelete(transaction.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
