@@ -72,3 +72,11 @@ export function getUserIdentifier(user?: User | null) {
 
   return null
 }
+
+export function normalizeTransactionType(type?: string | null) {
+  if (!type) {
+    return null
+  }
+
+  return type.trim().toLowerCase()
+}

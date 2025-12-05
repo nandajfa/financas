@@ -3,6 +3,7 @@ import { TrendingDown, TrendingUp, Wallet2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Skeleton } from '../ui/skeleton'
 import type { Transaction } from '../../types/transaction'
+import { normalizeTransactionType } from '@/lib/utils'
 
 interface SummaryCardsProps {
   transactions: Transaction[]
@@ -11,14 +12,12 @@ interface SummaryCardsProps {
 }
 
 export function SummaryCards({ transactions, isLoading, periodLabel }: SummaryCardsProps) {
-  const normalizeType = (transaction: Transaction) => transaction.tipo?.toLowerCase()
-
   const totalReceitas = transactions
-    .filter(transaction => normalizeType(transaction) === 'receita')
+    .filter(transaction => normalizeTransactionType(transaction.tipo) === 'receita')
     .reduce((sum, transaction) => sum + (transaction.valor || 0), 0)
 
   const totalDespesas = transactions
-    .filter(transaction => normalizeType(transaction) === 'despesa')
+    .filter(transaction => normalizeTransactionType(transaction.tipo) === 'despesa')
     .reduce((sum, transaction) => sum + (transaction.valor || 0), 0)
 
   const saldo = totalReceitas - totalDespesas
