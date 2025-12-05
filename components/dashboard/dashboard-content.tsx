@@ -8,6 +8,7 @@ import { SummaryCards } from './summary-cards'
 import { ChartsSection } from './charts-section'
 import { TransactionsTable } from './transactions-table'
 import { createClient } from '@/lib/supabase/client'
+import { parseTransactionDate } from '@/lib/utils'
 
 export type DashboardFilters = {
   month: string
@@ -96,8 +97,8 @@ export function DashboardContent({ user }: { user: User }) {
 
       // Ordenar por data (mais recente primeiro)
       uniqueTransactions.sort((a, b) => {
-        const dateA = new Date(a.quando || a.created_at).getTime()
-        const dateB = new Date(b.quando || b.created_at).getTime()
+        const dateA = parseTransactionDate(a.quando || a.created_at)?.getTime() ?? 0
+        const dateB = parseTransactionDate(b.quando || b.created_at)?.getTime() ?? 0
         return dateB - dateA
       })
 
@@ -152,7 +153,7 @@ export function DashboardContent({ user }: { user: User }) {
 
     return allTransactions.filter(transaction => {
       const baseDate = transaction.quando ?? transaction.created_at
-      const transactionDate = baseDate ? new Date(baseDate) : null
+      const transactionDate = parseTransactionDate(baseDate)
 
       const matchMonth =
         monthFilter === null || !transactionDate
@@ -190,8 +191,9 @@ export function DashboardContent({ user }: { user: User }) {
     const years = new Set<string>()
     allTransactions.forEach(transaction => {
       const baseDate = transaction.quando ?? transaction.created_at
-      if (!baseDate) return
-      const year = new Date(baseDate).getFullYear()
+      const parsedDate = parseTransactionDate(baseDate)
+      if (!parsedDate) return
+      const year = parsedDate.getFullYear()
       years.add(String(year))
     })
 

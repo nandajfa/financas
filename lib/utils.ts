@@ -6,6 +6,37 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function parseTransactionDate(dateValue?: string | Date | null) {
+  if (!dateValue) return null
+
+  if (dateValue instanceof Date) return dateValue
+
+  const trimmed = dateValue.trim()
+
+  // Handle dates coming in the format "DD/MM/YYYY HH:mm" or "DD/MM/YYYY"
+  const match = trimmed.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/
+  )
+
+  if (match) {
+    const [, dayStr, monthStr, yearStr, hourStr, minuteStr, secondStr] = match
+    const day = Number.parseInt(dayStr, 10)
+    const month = Number.parseInt(monthStr, 10) - 1
+    const year = Number.parseInt(yearStr, 10)
+    const hour = hourStr ? Number.parseInt(hourStr, 10) : 0
+    const minute = minuteStr ? Number.parseInt(minuteStr, 10) : 0
+    const second = secondStr ? Number.parseInt(secondStr, 10) : 0
+
+    const parsed = new Date(year, month, day, hour, minute, second)
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed
+    }
+  }
+
+  const fallback = new Date(trimmed)
+  return Number.isNaN(fallback.getTime()) ? null : fallback
+}
+
 export function getUserIdentifier(user?: User | null) {
   if (!user) {
     return null

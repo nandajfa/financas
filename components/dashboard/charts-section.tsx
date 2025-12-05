@@ -17,6 +17,7 @@ import {
 } from 'recharts'
 
 import type { Transaction } from '../../types/transaction'
+import { parseTransactionDate } from '@/lib/utils'
 
 interface ChartsSectionProps {
   transactions: Transaction[]
@@ -40,10 +41,8 @@ export function ChartsSection({ transactions, isLoading }: ChartsSectionProps) {
     }, [] as Array<{ name: string; value: number }>)
 
   const mesData = transactions.reduce((acc, transaction) => {
-    const date = new Date(transaction.quando ?? transaction.created_at)
-    if (Number.isNaN(date.getTime())) {
-      return acc
-    }
+    const date = parseTransactionDate(transaction.quando ?? transaction.created_at)
+    if (!date) return acc
 
     const mes = date.toLocaleString('pt-BR', { month: 'short' })
     const existing = acc.find(item => item.name === mes)
