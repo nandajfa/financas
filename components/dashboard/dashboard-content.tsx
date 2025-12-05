@@ -8,7 +8,7 @@ import { SummaryCards } from './summary-cards'
 import { ChartsSection } from './charts-section'
 import { TransactionsTable } from './transactions-table'
 import { createClient } from '@/lib/supabase/client'
-import { parseTransactionDate } from '@/lib/utils'
+import { normalizeTransactionType, parseTransactionDate } from '@/lib/utils'
 
 export type DashboardFilters = {
   month: string
@@ -166,7 +166,9 @@ export function DashboardContent({ user }: { user: User }) {
           : transactionDate.getFullYear() === yearFilter
 
       const matchType =
-        filters.type === 'all' ? true : transaction.tipo?.toLowerCase() === filters.type
+        filters.type === 'all'
+          ? true
+          : normalizeTransactionType(transaction.tipo) === normalizeTransactionType(filters.type)
 
       const matchCategory =
         filters.category === 'all'

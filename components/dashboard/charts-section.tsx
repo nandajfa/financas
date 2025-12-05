@@ -17,7 +17,7 @@ import {
 } from 'recharts'
 
 import type { Transaction } from '../../types/transaction'
-import { parseTransactionDate } from '@/lib/utils'
+import { normalizeTransactionType, parseTransactionDate } from '@/lib/utils'
 
 interface ChartsSectionProps {
   transactions: Transaction[]
@@ -27,10 +27,8 @@ interface ChartsSectionProps {
 const COLORS = ['#0ea5e9', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6']
 
 export function ChartsSection({ transactions, isLoading }: ChartsSectionProps) {
-  const normalizeType = (transaction: Transaction) => transaction.tipo?.toLowerCase()
-
   const categoriaData = transactions
-    .filter(transaction => normalizeType(transaction) === 'despesa')
+    .filter(transaction => normalizeTransactionType(transaction.tipo) === 'despesa')
     .reduce((acc, transaction) => {
       const categoryName = transaction.categoria ?? 'Sem categoria'
       const existing = acc.find(item => item.name === categoryName)
@@ -49,19 +47,21 @@ export function ChartsSection({ transactions, isLoading }: ChartsSectionProps) {
     const mes = date.toLocaleString('pt-BR', { month: 'short' })
     const existing = acc.find(item => item.name === mes)
 
-    if (existing) {
-      if (normalizeType(transaction) === 'despesa') {
-        existing.despesas += transaction.valor || 0
+      const transactionType = normalizeTransactionType(transaction.tipo)
+
+      if (existing) {
+        if (transactionType === 'despesa') {
+          existing.despesas += transaction.valor || 0
+        } else {
+          existing.receitas += transaction.valor || 0
+        }
       } else {
-        existing.receitas += transaction.valor || 0
+        acc.push({
+          name: mes,
+          despesas: transactionType === 'despesa' ? transaction.valor || 0 : 0,
+          receitas: transactionType === 'receita' ? transaction.valor || 0 : 0
+        })
       }
-    } else {
-      acc.push({
-        name: mes,
-        despesas: normalizeType(transaction) === 'despesa' ? transaction.valor || 0 : 0,
-        receitas: normalizeType(transaction) === 'receita' ? transaction.valor || 0 : 0
-      })
-    }
 
     return acc
   }, [] as Array<{ name: string; despesas: number; receitas: number }>)
