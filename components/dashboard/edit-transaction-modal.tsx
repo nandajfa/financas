@@ -77,7 +77,7 @@ export function EditTransactionModal({
         estabelecimento: form.estabelecimento,
         categoria: form.categoria,
         tipo: form.tipo as string,
-        valor: parsedValor,
+        valor: Math.abs(parsedValor),
         detalhes: form.detalhes
       }
 

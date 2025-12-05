@@ -85,13 +85,19 @@ export function AddTransactionModal({ onSuccess }: AddTransactionModalProps) {
     setLoading(true)
 
     try {
+      const parsedValor = Number.parseFloat(form.valor)
+      if (!Number.isFinite(parsedValor)) {
+        alert('Informe um valor numérico válido.')
+        return
+      }
+
       const { data: insertedData, error } = await supabase
         .from<TransacaoInsert>('transacoes')
         .insert({
           quando: form.data,
           user_id: user.id,
           estabelecimento: form.estabelecimento,
-          valor: Number.parseFloat(form.valor),
+          valor: Math.abs(parsedValor),
           detalhes: form.detalhes,
           tipo: form.tipo,
           categoria: form.categoria
