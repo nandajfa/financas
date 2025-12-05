@@ -11,12 +11,14 @@ interface SummaryCardsProps {
 }
 
 export function SummaryCards({ transactions, isLoading, periodLabel }: SummaryCardsProps) {
+  const normalizeType = (transaction: Transaction) => transaction.tipo?.toLowerCase()
+
   const totalReceitas = transactions
-    .filter(transaction => transaction.tipo === 'receita')
+    .filter(transaction => normalizeType(transaction) === 'receita')
     .reduce((sum, transaction) => sum + (transaction.valor || 0), 0)
 
   const totalDespesas = transactions
-    .filter(transaction => transaction.tipo === 'despesa')
+    .filter(transaction => normalizeType(transaction) === 'despesa')
     .reduce((sum, transaction) => sum + (transaction.valor || 0), 0)
 
   const saldo = totalReceitas - totalDespesas

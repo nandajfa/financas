@@ -27,8 +27,10 @@ interface ChartsSectionProps {
 const COLORS = ['#0ea5e9', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6']
 
 export function ChartsSection({ transactions, isLoading }: ChartsSectionProps) {
+  const normalizeType = (transaction: Transaction) => transaction.tipo?.toLowerCase()
+
   const categoriaData = transactions
-    .filter(transaction => transaction.tipo === 'despesa')
+    .filter(transaction => normalizeType(transaction) === 'despesa')
     .reduce((acc, transaction) => {
       const categoryName = transaction.categoria ?? 'Sem categoria'
       const existing = acc.find(item => item.name === categoryName)
@@ -48,7 +50,7 @@ export function ChartsSection({ transactions, isLoading }: ChartsSectionProps) {
     const existing = acc.find(item => item.name === mes)
 
     if (existing) {
-      if (transaction.tipo === 'despesa') {
+      if (normalizeType(transaction) === 'despesa') {
         existing.despesas += transaction.valor || 0
       } else {
         existing.receitas += transaction.valor || 0
@@ -56,8 +58,8 @@ export function ChartsSection({ transactions, isLoading }: ChartsSectionProps) {
     } else {
       acc.push({
         name: mes,
-        despesas: transaction.tipo === 'despesa' ? transaction.valor || 0 : 0,
-        receitas: transaction.tipo === 'receita' ? transaction.valor || 0 : 0
+        despesas: normalizeType(transaction) === 'despesa' ? transaction.valor || 0 : 0,
+        receitas: normalizeType(transaction) === 'receita' ? transaction.valor || 0 : 0
       })
     }
 
