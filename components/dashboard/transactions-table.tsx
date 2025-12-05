@@ -207,6 +207,7 @@ export function TransactionsTable({
               <TableBody>
                 {paginatedTransactions.map(transaction => {
                   const transactionDate = parseTransactionDate(transaction.quando ?? transaction.created_at)
+                  const absoluteValue = Math.abs(transaction.valor ?? 0)
 
                   return (
                     <TableRow key={transaction.id} className="transition-colors hover:bg-muted/40">
@@ -232,7 +233,7 @@ export function TransactionsTable({
                         </span>
                       </TableCell>
                       <TableCell className="text-right font-semibold">
-                        {transaction.tipo === 'receita' ? '+' : '-'} R$ {transaction.valor?.toFixed(2)}
+                        {transaction.tipo === 'receita' ? '+' : '-'} R$ {absoluteValue.toFixed(2)}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
